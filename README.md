@@ -115,10 +115,6 @@ CustomRouteTransitionBuilder customTransition = ShellRouteTransitions.createCust
 );
 ```
 
-## Example
-
-For a complete example of how to use this package, see the `/example` folder in the GitHub repository.
-
 ## Additional Information
 
 - [GitHub Repository](https://github.com/BawarX/shelll_route_animation)

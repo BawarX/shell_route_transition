@@ -115,7 +115,7 @@ CustomRouteTransitionBuilder customTransition = ShellRouteTransitions.createCust
 );
 ```
 
-## Additional Information
+## Additional Informationn
 
 - [GitHub Repository](https://github.com/BawarX/shelll_route_animation)
 - [Bug Reports and Feature Requests](https://github.com/BawarX/shelll_route_animation/issues)

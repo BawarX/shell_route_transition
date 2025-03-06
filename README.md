@@ -18,16 +18,16 @@ A Flutter package that provides beautiful and customizable transitions for shell
 ## Transition Types
 
 ### Fade Transition
-<img src="assets/gifs/fade_transition.gif" width="200"/>
+![Fade Transition](assets/gifs/fade_transition.gif)
 
 ### Horizontal Slide Transition
-<img src="assets/gifs/slide_horizontal_transition.gif" width="200"/>
+![Horizontal Slide](assets/gifs/slide_horizontal_transition.gif)
 
 ### Vertical Slide Transition
-<img src="assets/gifs/slide_vertical.gif" width="200"/>
+![Vertical Slide](assets/gifs/slide_vertical.gif)
 
 ### Scale Transition
-<img src="assets/gifs/scale_transition.gif" width="200"/>
+![Scale Transition](assets/gifs/scale_transition.gif)
 
 
 ## Getting Started

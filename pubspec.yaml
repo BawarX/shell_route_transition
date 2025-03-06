@@ -1,6 +1,6 @@
 name: shell_route_transitions
 description: "A Flutter package that provides beautiful and customizable transitions for shell routes in Flutter applications."
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/BawarX/shelll_route_animation
 repository: https://github.com/BawarX/shell_route_transition
 issue_tracker: https://github.com/BawarX/shelll_route_animation/issues

@@ -7,7 +7,10 @@
 
 ## 0.0.2
 
-* Updated package read me
+* Updated package readme with better examples
 * Added example project folder with sample implementation
+* Added visual demonstrations with GIFs
+* Added detailed usage examples
 * Improved documentation
+* Fixed exports
 

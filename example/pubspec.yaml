@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   shell_route_transitions:
     path: ../
   go_router: ^14.8.1

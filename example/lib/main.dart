@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shell_route_transitions/shell_route_transitions.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:shell_route_transitions/animated_stateful_shell_route.dart';
+import 'package:shell_route_transitions/route_transition.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -17,35 +21,134 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      routerConfig: _router,
+      routerConfig: goRouter,
     );
   }
 }
 
-// Example pages
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class ScaffoldWithNestedNavigation extends StatelessWidget {
+  const ScaffoldWithNestedNavigation({Key? key, required this.navigationShell})
+    : super(key: key ?? const ValueKey<String>('ScaffoldWithNestedNavigation'));
+  final StatefulNavigationShell navigationShell;
+
+  void _goBranch(int index) {
+    navigationShell.goBranch(
+      index,
+
+      initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 450) {
+          return ScaffoldWithNavigationBar(
+            body: navigationShell,
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _goBranch,
+          );
+        } else {
+          return ScaffoldWithNavigationRail(
+            body: navigationShell,
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _goBranch,
+          );
+        }
+      },
+    );
+  }
+}
+
+class ScaffoldWithNavigationBar extends StatelessWidget {
+  const ScaffoldWithNavigationBar({
+    super.key,
+    required this.body,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+  final Widget body;
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      body: body,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        destinations: const [
+          NavigationDestination(label: 'Section A', icon: Icon(Icons.home)),
+          NavigationDestination(label: 'Section B', icon: Icon(Icons.settings)),
+          NavigationDestination(label: 'Section C', icon: Icon(Icons.person)),
+        ],
+        onDestinationSelected: onDestinationSelected,
+      ),
+    );
+  }
+}
+
+class ScaffoldWithNavigationRail extends StatelessWidget {
+  const ScaffoldWithNavigationRail({
+    super.key,
+    required this.body,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+  final Widget body;
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+            labelType: NavigationRailLabelType.all,
+            destinations: const <NavigationRailDestination>[
+              NavigationRailDestination(
+                label: Text('Section A'),
+                icon: Icon(Icons.home),
+              ),
+              NavigationRailDestination(
+                label: Text('Section B'),
+                icon: Icon(Icons.settings),
+              ),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(child: body),
+        ],
+      ),
+    );
+  }
+}
+
+class RootScreen extends StatelessWidget {
+  const RootScreen({required this.label, required this.detailsPath, super.key});
+  final String label;
+  final String detailsPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Tab root - $label')),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Home Screen', style: TextStyle(fontSize: 24)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final StatefulNavigationShell navigationShell =
-                    context
-                        .findAncestorWidgetOfExactType<
-                          StatefulNavigationShell
-                        >()!;
-                navigationShell.goBranch(1);
-              },
-              child: const Text('Go to Profile'),
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              'Screen $label',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const Padding(padding: EdgeInsets.all(4)),
+            TextButton(
+              onPressed: () => context.go(detailsPath),
+              child: const Text('View details'),
             ),
           ],
         ),
@@ -54,103 +157,45 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+final goRouter = GoRouter(
+  initialLocation: '/a',
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Profile Screen', style: TextStyle(fontSize: 24)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final StatefulNavigationShell navigationShell =
-                    context
-                        .findAncestorWidgetOfExactType<
-                          StatefulNavigationShell
-                        >()!;
-                navigationShell.goBranch(2);
-              },
-              child: const Text('Go to Settings'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Settings Screen', style: TextStyle(fontSize: 24)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final StatefulNavigationShell navigationShell =
-                    context
-                        .findAncestorWidgetOfExactType<
-                          StatefulNavigationShell
-                        >()!;
-                navigationShell.goBranch(0);
-              },
-              child: const Text('Go to Home'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Navigation setup with shell route transitions
-final _router = GoRouter(
-  initialLocation: '/',
+  debugLogDiagnostics: true,
   routes: [
-    StatefulShellRoute.indexedStack(
+    AnimatedStatefulShellRoute(
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionBuilder: ShellRouteTransitions.scale,
       builder: (context, state, navigationShell) {
-        return AnimatedShellRouteContainer(
-          navigationShell: navigationShell,
-          transitionBuilder: ShellRouteTransitions.fade,
-          children: [
-            const HomeScreen(),
-            const ProfileScreen(),
-            const SettingsScreen(),
-          ],
-        );
+        return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
       },
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/', builder: (_, __) => const SizedBox.shrink()),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
             GoRoute(
-              path: '/profile',
-              builder: (_, __) => const SizedBox.shrink(),
+              path: '/a',
+              builder:
+                  (context, state) =>
+                      const RootScreen(label: 'A', detailsPath: '/a/details'),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/settings',
-              builder: (_, __) => const SizedBox.shrink(),
+              path: '/b',
+              builder:
+                  (context, state) =>
+                      const RootScreen(label: 'B', detailsPath: '/b/details'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/c',
+              builder:
+                  (context, state) =>
+                      const RootScreen(label: 'C', detailsPath: '/c/details'),
             ),
           ],
         ),

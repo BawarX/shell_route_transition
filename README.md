@@ -1,8 +1,8 @@
-
-
 # Shell Route Transitions
 
 A Flutter package that provides beautiful and customizable transitions for shell routes in Flutter applications. This package makes it easy to add professional-looking animations when navigating between routes.
+
+![Package Demo](assets/gifs/demo.gif)
 
 ## Features
 
@@ -15,13 +15,27 @@ A Flutter package that provides beautiful and customizable transitions for shell
 - **Easy Integration**: Simple to use with Go Router or other navigation solutions
 - **Performant**: Optimized for smooth animations
 
+## Transition Types
+
+### Fade Transition
+![Fade Transition](assets/gifs/fade_transition.gif)
+
+### Horizontal Slide Transition
+![Horizontal Slide](assets/gifs/slide_horizontal_transition.gif)
+
+### Vertical Slide Transition
+![Vertical Slide](assets/gifs/slide_vertical.gif)
+
+### Scale Transition
+![Scale Transition](assets/gifs/scale_transition.gif)
+
 ## Getting Started
 
 Add the package to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  shell_route_transitions: ^0.0.1
+  shell_route_transitions: ^0.0.2
 ```
 
 Then run:
@@ -35,13 +49,10 @@ flutter pub get
 ### Basic Usage
 
 ```dart
-import 'package:shell_route_transitions/export.dart';
+import 'package:shell_route_transitions/shell_route_transitions.dart';
 
-// Using a predefined transition
 CustomRouteTransitionBuilder transitionBuilder = ShellRouteTransitions.fade;
 
-// Apply to your route configuration
-// Example with GoRouter:
 GoRouter(
   routes: [
     ShellRoute(
@@ -59,7 +70,7 @@ GoRouter(
           child: child,
         );
       },
-      // Additional route configuration
+     
     ),
   ],
 )
@@ -81,11 +92,122 @@ ShellRouteTransitions.slideVertical
 ShellRouteTransitions.scale
 ```
 
-### Creating Custom Transitions
+### Real-World Example with AnimatedStatefulShellRoute
+
+Here's a complete example showing how to use shell route transitions with GoRouter and a bottom navigation bar:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shell_route_transitions/animated_stateful_shell_route.dart';
+import 'package:shell_route_transitions/route_transition.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'Shell Route Transitions Example',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      routerConfig: goRouter,
+    );
+  }
+}
+
+// Navigation setup with shell route transitions
+final goRouter = GoRouter(
+  initialLocation: '/a',
+  debugLogDiagnostics: true,
+  routes: [
+    AnimatedStatefulShellRoute(
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionBuilder: ShellRouteTransitions.scale, // Choose your transition type
+      builder: (context, state, navigationShell) {
+        return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/a',
+              builder: (context, state) =>
+                  const RootScreen(label: 'A', detailsPath: '/a/details'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/b',
+              builder: (context, state) =>
+                  const RootScreen(label: 'B', detailsPath: '/b/details'),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/c',
+              builder: (context, state) =>
+                  const RootScreen(label: 'C', detailsPath: '/c/details'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);
+
+// Basic navigation shell with responsive layout
+class ScaffoldWithNestedNavigation extends StatelessWidget {
+  const ScaffoldWithNestedNavigation({Key? key, required this.navigationShell})
+    : super(key: key ?? const ValueKey<String>('ScaffoldWithNestedNavigation'));
+  final StatefulNavigationShell navigationShell;
+
+  void _goBranch(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 450) {
+          return ScaffoldWithNavigationBar(
+            body: navigationShell,
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _goBranch,
+          );
+        } else {
+          return ScaffoldWithNavigationRail(
+            body: navigationShell,
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: _goBranch,
+          );
+        }
+      },
+    );
+  }
+}
+
+## Creating Custom Transitions
 
 You can create your own custom transitions by implementing the `CustomRouteTransitionBuilder` function type:
 
 ```dart
+// Define your custom transition
 CustomRouteTransitionBuilder myCustomTransition = ({
   required int index,
   required Widget child,
@@ -93,15 +215,32 @@ CustomRouteTransitionBuilder myCustomTransition = ({
   required int nextIndex,
   required Animation<double> animation,
 }) {
-  // Implement your custom transition logic here
-  return YourCustomAnimatedWidget(
-    animation: animation,
-    child: child,
+  // Example: A custom rotation transition
+  double rotationZ = 0.0;
+  double opacity = 0.0;
+  
+  if (index == currentIndex && index != nextIndex) {
+    rotationZ = animation.value * 0.5; // Rotate up to 0.5 radians
+    opacity = 1.0 - animation.value;
+  } else if (index == nextIndex) {
+    rotationZ = (1.0 - animation.value) * -0.5; // Start rotated and go to 0
+    opacity = animation.value;
+  } else if (index == currentIndex && index == nextIndex) {
+    rotationZ = 0.0;
+    opacity = 1.0;
+  }
+  
+  return Positioned.fill(
+    child: Transform(
+      transform: Matrix4.rotationZ(rotationZ),
+      alignment: Alignment.center,
+      child: Opacity(opacity: opacity, child: child),
+    ),
   );
 };
 
 // Or use the helper method
-CustomRouteTransitionBuilder customTransition = ShellRouteTransitions.createCustomTransition(
+CustomRouteTransitionBuilder customRotationTransition = ShellRouteTransitions.createCustomTransition(
   ({
     required int index,
     required Widget child,
@@ -109,13 +248,38 @@ CustomRouteTransitionBuilder customTransition = ShellRouteTransitions.createCust
     required int nextIndex,
     required Animation<double> animation,
   }) {
-    // Your custom transition implementation
-    return YourCustomWidget();
+    double rotationZ = 0.0;
+    double opacity = 0.0;
+    
+    if (index == currentIndex && index != nextIndex) {
+      rotationZ = animation.value * 0.5;
+      opacity = 1.0 - animation.value;
+    } else if (index == nextIndex) {
+      rotationZ = (1.0 - animation.value) * -0.5;
+      opacity = animation.value;
+    } else if (index == currentIndex && index == nextIndex) {
+      rotationZ = 0.0;
+      opacity = 1.0;
+    }
+    
+    return Positioned.fill(
+      child: Transform(
+        transform: Matrix4.rotationZ(rotationZ),
+        alignment: Alignment.center,
+        child: Opacity(opacity: opacity, child: child),
+      ),
+    );
   },
 );
+
+// Use it in your GoRouter
+AnimatedStatefulShellRoute(
+  transitionBuilder: customRotationTransition,
+  // Other properties...
+)
 ```
 
-## Additional Informationn
+## Additional Information
 
 - [GitHub Repository](https://github.com/BawarX/shelll_route_animation)
 - [Bug Reports and Feature Requests](https://github.com/BawarX/shelll_route_animation/issues)

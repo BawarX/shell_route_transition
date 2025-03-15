@@ -36,7 +36,7 @@ Add the package to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  shell_route_transitions: ^0.0.2
+  shell_route_transitions: ^0.0.7
 ```
 
 Then run:

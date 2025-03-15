@@ -14,7 +14,7 @@
 * Improved documentation
 * Fixed exports
 
-## 0.0.6
+## 0.0.7
 
 * Fixed critical bug in animation handling during rapid tab switching
 * Added state synchronization protection to prevent UI/navigation state mismatch

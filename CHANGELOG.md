@@ -14,3 +14,6 @@
 * Improved documentation
 * Fixed exports
 
+## 0.0.7
+
+* updated bug between sliding transition fast 

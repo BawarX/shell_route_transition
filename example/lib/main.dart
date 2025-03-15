@@ -164,7 +164,7 @@ final goRouter = GoRouter(
   routes: [
     AnimatedStatefulShellRoute(
       transitionDuration: const Duration(milliseconds: 300),
-      transitionBuilder: ShellRouteTransitions.fade,
+      transitionBuilder: ShellRouteTransitions.slideHorizontal,
       builder: (context, state, navigationShell) {
         return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
       },

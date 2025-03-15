@@ -14,6 +14,11 @@
 * Improved documentation
 * Fixed exports
 
-## 0.0.7
+## 0.0.6
 
-* updated bug between sliding transition fast 
+* Fixed critical bug in animation handling during rapid tab switching
+* Added state synchronization protection to prevent UI/navigation state mismatch
+* Improved animation interruption handling for better user experience
+* Enhanced the interactive state management during transitions
+* Optimized transition behavior for quick navigation between tabs
+* Added safety checks to ensure animations and state remain in sync 

@@ -58,20 +58,37 @@ class _AnimatedShellRouteContainerState
     }
   }
 
+  /// Handles branch (tab) changes with animation
+  /// Includes protection against rapid tab switching desynchronization
   void _onBranchChanged(int newIndex) {
     if (_currentIndex == newIndex) return;
 
+    // Store the new index as the target destination
     _nextIndex = newIndex;
 
+    // Handle interruption of animations when rapidly switching tabs
     if (_animationController.isAnimating) {
       _animationController.stop();
+
+      // If animation was more than halfway through, consider the previous animation
+      // as effectively completed for better visual feedback during rapid switching
+      if (_animationController.value > 0.5) {
+        _currentIndex = _nextIndex;
+        _nextIndex = newIndex;
+      }
     }
 
     _animationController.reset();
+
+    // Begin the animation to the new tab
     _animationController.forward().then((_) {
-      setState(() {
-        _currentIndex = newIndex;
-      });
+      // Only update state if this completion callback is for the most recent animation
+      // and if the widget is still mounted - prevents stale animation callbacks
+      if (mounted && _nextIndex == newIndex) {
+        setState(() {
+          _currentIndex = newIndex;
+        });
+      }
     });
   }
 
@@ -83,6 +100,15 @@ class _AnimatedShellRouteContainerState
 
   @override
   Widget build(BuildContext context) {
+    // Safety mechanism: ensure UI state remains synchronized with the navigation shell
+    // This prevents the desynchronization when rapidly switching tabs
+    if (!_animationController.isAnimating &&
+        widget.navigationShell.currentIndex != _currentIndex) {
+      // Force synchronization if we detect a mismatch between UI and logical state
+      _currentIndex = widget.navigationShell.currentIndex;
+      _nextIndex = _currentIndex;
+    }
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -114,14 +140,20 @@ class _AnimatedShellRouteContainerState
   }
 
   Widget _createAnimatedChild(Widget child, int index, bool isVisible) {
+    // Determine if this child should be interactive based on animation state
+    bool shouldIgnorePointer;
+
+    if (_animationController.isAnimating) {
+      // During animation, only the target tab should be interactive
+      shouldIgnorePointer = index != _nextIndex;
+    } else {
+      // When no animation is happening, only the current tab should be interactive
+      shouldIgnorePointer = index != _currentIndex;
+    }
+
     return TickerMode(
       enabled: isVisible,
-      child: IgnorePointer(
-        ignoring:
-            index != _nextIndex && _animationController.isAnimating ||
-            index != _currentIndex && !_animationController.isAnimating,
-        child: child,
-      ),
+      child: IgnorePointer(ignoring: shouldIgnorePointer, child: child),
     );
   }
 }
